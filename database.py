@@ -1,6 +1,5 @@
 import datetime
 import sqlite3
-from datetime import date as datetime_date, timedelta
 from typing import List
 from classes import Habit, HabitCompleted
 
