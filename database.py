@@ -66,7 +66,7 @@ class Database:
     def select_habit(self, habitName):
         cursor = self.database.cursor()
         cursor.execute("SELECT * FROM habitCompleted WHERE habitName=?", (habitName, ))
-        cursor.fetchall()
+        return cursor.fetchall()
 
     def select_habit_streak(self, habitName):
         cursor = self.database.cursor()
@@ -78,13 +78,13 @@ class Database:
             list_of_habits.append(h)
         return list_of_habits
 
-    def select_date(self, habitName):
+    def select_date(self, date):
         cursor = self.database.cursor()
         cursor.execute("SELECT * FROM habitCompleted WHERE date=?", (date, ))
         list_of_tuples = cursor.fetchall()
-        dict_of_habits = {}
-        for (name, date) in list_of_tuples:
-            h = HabitCompleted(name, date)
+        list_of_habits = []
+        for (date, name) in list_of_tuples:
+            h = HabitCompleted(date, name)
             list_of_habits.append(h)
-        return dict_of_habits
+        return list_of_habits
 

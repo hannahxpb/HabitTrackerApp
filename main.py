@@ -5,8 +5,8 @@ from classes import Habit, Periodicity, HabitCompleted
 
 
 class HabitTracker:
-    def __init__(self):
-        self.storage = Database()
+    def __init__(self, storage = None):
+        self.storage = storage or Database()
         self.allHabits: List[Habit] = self.storage.get_allhabits()
         self.completedHabits = self.storage.get_alltrackedhabits()
 
@@ -26,7 +26,7 @@ class HabitTracker:
         self.allHabits.append(new_habit)
 
     def select_habit(self, name: str):
-        print(self.storage.select_habit(name))
+        return self.storage.select_habit(name)
 
     def select_habit_streak(self, name: str):
         # Sort list of completed habits
@@ -34,14 +34,16 @@ class HabitTracker:
         # Using timedelta to compare list elements (if equal or less than one day, add to streak)
         dates = self.storage.select_habit_streak(name)
         dates.sort()
-        consecutive_days = [dates[0]]
+        consecutive_days = []
         for i in range(1, len(dates)):
             if (dates[i].date - dates[i-1].date).days == 1:
                 consecutive_days.append(i)
-        print(len(consecutive_days))
+            elif dates[i].date == dates[i-1].date:
+                continue
+        return len(consecutive_days)+1
 
-    # def get_date(self, date: ):
-    #     pass
+    def get_date(self, date: datetime.date):
+        return self.storage.select_date(date)
 
     # def update(self, habit):
     #     pass

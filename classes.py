@@ -1,11 +1,11 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 
 class Habit:
     def __str__(self) -> str:
         return f"{self.__class__.__name__}({self.name}: {self.definition} {self.periodicity})"
 
-    def  __init__(self, name, definition, periodicity):
+    def __init__(self, name, definition, periodicity):
         self.name = name
         self.definition = definition
         self.periodicity = periodicity

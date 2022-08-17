@@ -2,6 +2,7 @@ from sqlite3 import IntegrityError
 import typer
 from main import HabitTracker
 from classes import Habit, HabitCompleted
+from datetime import datetime
 
 app = typer.Typer()
 ht = HabitTracker()
@@ -37,11 +38,16 @@ def delete_habit(name: str):
 
 @app.command()
 def show_specific(name: str):
-    ht.select_habit(name)
+    print(f"The habit {name} has been completed on the following days: \n" + str(ht.select_habit(name)))
 
 @app.command()
 def show_specific_streak(name: str):
-    ht.select_habit_streak(name)
+    print(f"Your longest streak for the habit {name}: " + str(ht.select_habit_streak(name)) + " days")
+
+@app.command()
+def show_date(date: datetime.date):
+    print(ht.get_date(date))
+
 
 if __name__ == "__main__":
     app()
