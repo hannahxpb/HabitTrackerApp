@@ -31,7 +31,7 @@ class Database:
     
     def get_allhabits(self) -> List[Habit]:
         cursor = self.database.cursor()
-        cursor.execute("SELECT name,definition,periodicity FROM habit")
+        cursor.execute("SELECT name, definition, periodicity FROM habit")
         list_of_tuples = cursor.fetchall()
         list_of_habits = []
         for (name, definition, periodicity) in list_of_tuples:
@@ -53,22 +53,32 @@ class Database:
 
     def delete_habit(self, name: str):
         cursor = self.database.cursor()
+        cursor.execute("DELETE FROM habitCompleted where habitName = ?", (name,))
         cursor.execute("DELETE FROM habit WHERE name = ?", (name, ))
         self.database.commit()
 
-    def add_completedhabit(self, habitName, date = None):
+    def complete_habit(self, habitName, date = None):
         cursor = self.database.cursor()
         if date is None:
             date = datetime.date.today().isoformat()
         cursor.execute("INSERT INTO habitCompleted VALUES (?, ?)", (date, habitName))
         self.database.commit()
 
-    def select_habit(self, habitName):
+    def update_habit(self, name: str, definition: str, periodicity: str):
+        cursor = self.database.cursor()
+        cursor.execute("UPDATE habit SET definition = :definition, periodicity = :periodicity WHERE name = :name",
+                        dict(name=name, definition=definition, periodicity=periodicity))
+        self.database.commit()
+        modified_rows = cursor.rowcount
+        if modified_rows == 0:
+            raise Exception(f"Could not find name: {name}")
+
+    def get_completedhabit(self, habitName):
         cursor = self.database.cursor()
         cursor.execute("SELECT * FROM habitCompleted WHERE habitName=?", (habitName, ))
         return cursor.fetchall()
 
-    def select_habit_streak(self, habitName):
+    def get_habitstreak(self, habitName):
         cursor = self.database.cursor()
         cursor.execute("SELECT habitName, date FROM habitCompleted WHERE habitName=?", (habitName, ))
         list_of_tuples = cursor.fetchall()
@@ -78,13 +88,12 @@ class Database:
             list_of_habits.append(h)
         return list_of_habits
 
+    def get_sameperiodicity(self, periodicity):
+        cursor = self.database.cursor()
+        cursor.execute("SELECT * FROM habit WHERE periodicity=?", (periodicity, ))
+        return cursor.fetchall()
+
     def select_date(self, date):
         cursor = self.database.cursor()
-        cursor.execute("SELECT * FROM habitCompleted WHERE date=?", (date, ))
-        list_of_tuples = cursor.fetchall()
-        list_of_habits = []
-        for (date, name) in list_of_tuples:
-            h = HabitCompleted(date, name)
-            list_of_habits.append(h)
-        return list_of_habits
-
+        cursor.execute("SELECT date, habitName FROM habitCompleted WHERE date=?", (date, ))
+        return cursor.fetchall()
