@@ -42,12 +42,10 @@ class HabitCompleted:
 class Periodicity(str, Enum):
     Daily = "daily"
     Weekly = "weekly"
-    Monthly = "monthly"
 
 period_map = {
     Periodicity.Daily: 1,
-    Periodicity.Weekly: 7,
-    Periodicity.Monthly: 30
+    Periodicity.Weekly: 7
 }
 
 
