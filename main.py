@@ -1,3 +1,6 @@
+import logging
+import math
+from sqlite3 import IntegrityError
 from typing import List
 from datetime import datetime, timedelta
 from database import Database
@@ -31,21 +34,24 @@ class HabitTracker:
 
     def complete_habit(self, name: str, date: str = None):
         completed_habit = HabitCompleted(name, date=date)
-        self.storage.complete_habit(completed_habit.name, completed_habit.date)
-        self.completedHabits.append(completed_habit)
+
+        try:
+            self.storage.complete_habit(completed_habit.name, completed_habit.date)
+            self.completedHabits.append(completed_habit)
+        except IntegrityError:
+            raise ValueError("Please create a habit before completing it.")
 
         dates = self.storage.get_habitstreak(name)
         dates.sort()
 
-        if len(dates) >= 2:
-            last_entry = dates[-1]
-            secondtolast_entry = dates[-2]
-            if completed_habit.date == last_entry and abs((last_entry.date - secondtolast_entry.date)).days >= 2:
-                return f"Your previous streak was lost. Habit {completed_habit.name} has been completed for today."
-            elif completed_habit.date != last_entry:
-                return f"Habit {completed_habit.name} has been completed for {completed_habit.date}"
+        if completed_habit.date == None:
+            if len(dates) >= 2:
+                last_entry = dates[-2]
+                if abs((completed_habit.date - last_entry.date)).days >= 2:
+                    return f"Your previous streak was lost. Habit {completed_habit.name} has been completed for today."
+
         else:
-            return f"Habit {completed_habit.name} has been completed for today."
+            return f"Habit {completed_habit.name} has been completed for {completed_habit.date}."
 
     def delete(self, name: str):
         self.storage.delete_habit(name)
@@ -70,29 +76,41 @@ class HabitTracker:
         # Using .days to compare list elements (if equal or less than one day, add to streak)
         dates = self.storage.get_habitstreak(name)
         dates.sort()
-        consecutive_days = 0
+        consecutive_period = 0
         longest_streak = 0
 
-        # for i in self.allHabits:
-        #     if i.name == name:
-        #         i.periodicity == period_map.
-        # period_map
+        streak_period = None
+        for i in self.allHabits:
+            if i.name == name:
+                streak_period = period_map[i.periodicity]
+                break
 
-
-        for i in range(1, len(dates)):
+        start_longeststreak = None
+        end_longeststreak = None
+        start_streak = None
+        end_streak = None
+        longest_streak = 0
+        for i in range (1, len(dates)):
             first_entry = dates[i-1]
             second_entry = dates[i]
+            start_streak = start_streak or first_entry
 
-            if abs((first_entry.date - second_entry.date).days) == 1:
-                consecutive_days += 1
-            elif abs((first_entry.date - second_entry.date).days) > 1:
-                consecutive_days = 0
-            longest_streak = max(consecutive_days, longest_streak)
-            # Return longest streak to discard older streaks
-        if longest_streak + 1 >= 30:
-            return f"Your streak: {longest_streak + 1}\nCongrats, you have reached a streak of at least 30 days for the habit {name}!"
-        else:
-            return longest_streak + 1
+            if abs((first_entry.date - second_entry.date).days) <= streak_period:
+                end_streak = second_entry
+            else:
+                # Reset next streak
+                start_streak = second_entry
+                end_streak = start_streak
+
+            # Check if this was the longest streak and store in that case
+            consecutive_period = (end_streak.date-start_streak.date).days
+            if consecutive_period > longest_streak:
+                start_longeststreak = start_streak
+                end_longeststreak = end_streak
+                longest_streak = consecutive_period
+
+        print(f"The longest streak began on {start_longeststreak.date} and ended on {end_longeststreak.date}")
+        return math.ceil((longest_streak+1) / streak_period)
 
     def get_longestrun_all(self):
         max_streak = 0
