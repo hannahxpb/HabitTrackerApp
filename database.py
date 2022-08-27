@@ -3,7 +3,6 @@ import sqlite3
 from typing import List
 from classes import Habit, HabitCompleted
 
-
 class Database:
     def __init__(self, name="database.db"):
         self.database = sqlite3.connect(name)
@@ -11,7 +10,8 @@ class Database:
     
     def create_tables(self):
         cursor = self.database.cursor()
-    
+        cursor.execute("PRAGMA foreign_keys = ON")
+
         cursor.execute("""CREATE TABLE IF NOT EXISTS habit(
             name TEXT PRIMARY KEY,
             definition TEXT,
@@ -20,7 +20,8 @@ class Database:
         cursor.execute("""CREATE TABLE IF NOT EXISTS habitCompleted(
             date TEXT,
             habitName TEXT,
-            FOREIGN KEY (habitName) references habit(name))""")
+            FOREIGN KEY (habitName) REFERENCES habit(name)
+            )""")
     
         self.database.commit()
     
