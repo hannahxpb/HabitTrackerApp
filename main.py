@@ -19,39 +19,10 @@ class HabitTracker:
     def create(self, new_habit: Habit):
         """
         Creates a new habit.
-
-        Parameters
-        ----------
-        new_habit
-            habit object or something
-
-        Returns
-        -------
-
+        new_habit object: name, definition, periodicity
         """
         self.storage.store_habit(new_habit.name, new_habit.definition, new_habit.periodicity.value)
         self.allHabits.append(new_habit)
-
-    def complete_habit(self, name: str, date: str = None):
-        completed_habit = HabitCompleted(name, date=date)
-
-        try:
-            self.storage.complete_habit(completed_habit.name, completed_habit.date)
-            self.completedHabits.append(completed_habit)
-        except IntegrityError:
-            raise ValueError("Please create a habit before completing it.")
-
-        dates = self.storage.get_habitstreak(name)
-        dates.sort()
-
-        if completed_habit.date == None:
-            if len(dates) >= 2:
-                last_entry = dates[-2]
-                if abs((completed_habit.date - last_entry.date)).days >= 2:
-                    return f"Your previous streak was lost. Habit {completed_habit.name} has been completed for today."
-
-        else:
-            return f"Habit {completed_habit.name} has been completed for {completed_habit.date}."
 
     def delete(self, name: str):
         self.storage.delete_habit(name)
@@ -59,25 +30,90 @@ class HabitTracker:
         self.completedHabits = self.storage.get_alltrackedhabits()
 
     def update(self, name: str, definition: str, periodicity: str) -> Habit:
+        """
+        Updates the definition and periodicity of a given habit.
+        """
         self.storage.update_habit(name, definition, periodicity)
         self.allHabits: List[Habit] = self.storage.get_allhabits()
         for h in self.allHabits:
             if h.name == name:
                 return h
 
-    def get_habit(self, name: str):
+    def complete_habit(self, name: str, date: str = None):
+        """
+        Completes a habit that was created. The date is optional - default is today.
+        """
+        completed_habit = HabitCompleted(name, date=date)
+
+        try:
+            self.storage.complete_habit(completed_habit.name, completed_habit.date)
+            self.completedHabits.append(completed_habit)
+
+        except IntegrityError:
+            raise ValueError("Please create a habit before completing it.")
+
+        current_streak = (self.is_current_streak_active(completed_habit))
+
+        return completed_habit.name, completed_habit.date, current_streak
+
+    def find_allstreaks(self, habit_name, streak_period)->list:
+        """
+        Finds all streaks and can be used in other functions (f.e. to establish current or longest streaks)
+        Returns a list of all streaks.
+        """
+        dates = self.storage.get_completedhabits(habit_name)
+        start_streak = None
+        end_streak = None
+        streak_list = []
+        for i in range(1, len(dates)):
+            first_entry = dates[i - 1]
+            second_entry = dates[i]
+            start_streak = start_streak or first_entry
+
+            if abs((first_entry.date - second_entry.date).days) <= streak_period:
+                end_streak = second_entry
+            else:
+                streak_length = math.ceil((end_streak.date - start_streak.date).days/streak_period)+1
+                streak_list.append((start_streak, end_streak, streak_length))
+                # Reset next streak
+                start_streak = second_entry
+                end_streak = start_streak
+
+        return streak_list
+
+    def is_current_streak_active(self, completed_habit)->int:
+        """
+        Determines the length of the current streak
+        Returns: int
+        """
+        streak_period = None
+        for i in self.allHabits:
+            if i.name == completed_habit.name:
+                streak_period = period_map[i.periodicity]
+                break
+        # Get the periodicity of the completed habit
+
+        today = datetime.now().date()
+
+        all_streaks = self.find_allstreaks(completed_habit.name, streak_period)
+        if not all_streaks:
+            return 0
+        latest_streak = max(all_streaks, key = lambda i: i[2])
+        # Returns the max value of the 3. element of the latest_streak list which is the end date of the last streak
+        start, end, length = latest_streak
+
+        if abs((today - end.date).days) <= streak_period:
+            return length
+
+    def get_habitcompletions(self, name: str):
         habits_completed = self.storage.get_completedhabit(name)
         habits_completed.sort()
         return habits_completed
 
-    def get_longestrun_habit(self, name: str):
-        # Sort list of completed habits
-        # Looping through the list of completed habits
-        # Using .days to compare list elements (if equal or less than one day, add to streak)
-        dates = self.storage.get_habitstreak(name)
-        dates.sort()
-        consecutive_period = 0
-        longest_streak = 0
+    def get_longeststreak_habit(self, name: str):
+        dates = self.storage.get_completedhabits(name)
+        if len(dates) < 1:
+            return None, None, None
 
         streak_period = None
         for i in self.allHabits:
@@ -85,46 +121,33 @@ class HabitTracker:
                 streak_period = period_map[i.periodicity]
                 break
 
-        start_longeststreak = None
-        end_longeststreak = None
-        start_streak = None
-        end_streak = None
-        longest_streak = 0
-        for i in range (1, len(dates)):
-            first_entry = dates[i-1]
-            second_entry = dates[i]
-            start_streak = start_streak or first_entry
+        all_streaks = self.find_allstreaks(name, streak_period)
+        if len(all_streaks) < 1:
+            return None, None, None
+        def get_streak_length(streak):
+            return streak[2]
+        longest_streak = max(all_streaks, key=get_streak_length)
+        start, end, streak_length = longest_streak
 
-            if abs((first_entry.date - second_entry.date).days) <= streak_period:
-                end_streak = second_entry
-            else:
-                # Reset next streak
-                start_streak = second_entry
-                end_streak = start_streak
+        return streak_length, start.date, end.date
+        # Returning the longest consecutive period in either days or weeks, depending on the periodicity
 
-            # Check if this was the longest streak and store in that case
-            consecutive_period = (end_streak.date-start_streak.date).days
-            if consecutive_period > longest_streak:
-                start_longeststreak = start_streak
-                end_longeststreak = end_streak
-                longest_streak = consecutive_period
-
-        print(f"The longest streak began on {start_longeststreak.date} and ended on {end_longeststreak.date}")
-        return math.ceil((longest_streak+1) / streak_period)
-
-    def get_longestrun_all(self):
+    def get_longeststreak_all(self):
         max_streak = 0
-        longest_streak = []
+        longest_streak_habits = []
         for h in self.allHabits:
-            streak = self.get_longestrun_habit(h.name)
+            streak, *_ = self.get_longeststreak_habit(h.name)
+            if streak == None:
+                continue
+            # because the return value of the get_longestrun_habit is a tuple and only the longest streak run is needed
             if streak > max_streak:
                 max_streak = streak
-                longest_streak = [h.name]
+                longest_streak_habits = [h.name]
             # [h.name] clears the list and adds the name of the habit if there have been other entries
             elif streak == max_streak:
-                longest_streak.append(h.name)
+                longest_streak_habits.append(h.name)
             # .append(h.name) appends the name, so that other names will remain in the list
-        return longest_streak, max_streak
+        return longest_streak_habits, max_streak
 
     def get_habits_sameperiodicity(self, periodicity: str):
         return self.storage.get_sameperiodicity(periodicity)

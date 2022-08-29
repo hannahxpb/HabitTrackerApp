@@ -33,7 +33,9 @@ def create_habit(name: str, definition: str, periodicity: str):
 @app.command()
 def complete_habit(name: str, date: Optional[str] = typer.Option(None, help="Default date for a completed habit is today")):
     try:
-        print(ht.complete_habit(name, date))
+        _, habit_date, current_streak = ht.complete_habit(name)
+        ht.complete_habit(name)
+        print(f"The habit {name} was completed on the {habit_date}. Your current streak is {current_streak}.")
     except ValueError:
         print("Invalid date format. Please enter the date in the following format: YYYY-MM-DD.")
 
@@ -49,11 +51,12 @@ def update_habit(name: str, definition: str, periodicity: str):
 
 @app.command()
 def show_habit(name: str):
-    print(f"The habit {name} has been completed on the following days: \n" + str(ht.get_habit(name)))
+    print(f"The habit {name} has been completed on the following days: \n" + str(ht.get_habitcompletions(name)))
 
 @app.command()
 def show_habit_longeststreak(name: str):
-    print(ht.get_longestrun_habit(name))
+    consec_period, start, end = ht.get_longeststreak_habit(name)
+    print(f"Your longest streak is from {start} to {end}. Your longest streak is: {consec_period} times")
 
 @app.command()
 def show_habit_sameperiodicity(periodicity: str):
@@ -61,7 +64,8 @@ def show_habit_sameperiodicity(periodicity: str):
 
 @app.command()
 def show_longeststreak_all():
-    print(ht.get_longestrun_all())
+    habits, streak = ht.get_longeststreak_all()
+    print(f"The following habit(s) have the longest streak of {streak} times: streak\n{habits}")
 
 @app.command()
 def show_date(date: str):
@@ -69,6 +73,3 @@ def show_date(date: str):
 
 if __name__ == "__main__":
     app()
-
-# def updateHabit(name: str, definition: str, periodicity: str = None):
-#     pass

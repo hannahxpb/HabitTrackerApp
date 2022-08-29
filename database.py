@@ -79,7 +79,7 @@ class Database:
         cursor.execute("SELECT * FROM habitCompleted WHERE habitName=?", (habitName, ))
         return cursor.fetchall()
 
-    def get_habitstreak(self, habitName):
+    def get_completedhabits(self, habitName):
         cursor = self.database.cursor()
         cursor.execute("SELECT habitName, date FROM habitCompleted WHERE habitName=?", (habitName, ))
         list_of_tuples = cursor.fetchall()
