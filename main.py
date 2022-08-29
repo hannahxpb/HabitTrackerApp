@@ -102,8 +102,8 @@ class HabitTracker:
                 start_streak = second_entry
                 end_streak = start_streak
 
-        if dates and not streak_list:
-        #
+        # Assign end of streak in case of still running streaks up until today
+        if start_streak and end_streak and len(streak_list)==0:
             streak_length = math.ceil((end_streak.date - start_streak.date).days / streak_period) + 1
             streak_list.append((start_streak, end_streak, streak_length))
 

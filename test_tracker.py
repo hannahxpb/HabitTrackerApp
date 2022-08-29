@@ -77,7 +77,7 @@ class TestTracker:
         self.tracker.complete_habit("test_name")
         assert self.tracker.find_allstreaks("test_name")
 
-    def test_complete_twobrokenstreaks(self):
+    def test_twobrokenstreaks(self):
         twoweeksago = datetime.datetime.now().date() - datetime.timedelta(weeks=2)
         oneweekago = datetime.datetime.now().date() - datetime.timedelta(weeks=1)
         test_habit = Habit("test_name", "test_definition", "daily")
