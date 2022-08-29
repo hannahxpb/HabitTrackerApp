@@ -77,17 +77,6 @@ class TestTracker:
         self.tracker.complete_habit("test_name")
         assert self.tracker.find_allstreaks("test_name")
 
-
-    # def test_complete_brokenstreak(self, capfd):
-    #     test_habit = Habit("test_name", "test_definition", "daily")
-    #     self.tracker.create(test_habit)
-    #     before_yesterday = datetime.datetime.now().date() - datetime.timedelta(days=2)
-    #     self.tracker.complete_habit("test_name", before_yesterday.isoformat())
-    #     self.tracker.complete_habit("test_name")
-    #     out, err = capfd.readouterr()
-    #     assert out == "Your previous streak was lost."
-    #     habit_name, habit_date = self.tracker.complete_habit("test_name")
-
     def test_complete_twobrokenstreaks(self):
         twoweeksago = datetime.datetime.now().date() - datetime.timedelta(weeks=2)
         oneweekago = datetime.datetime.now().date() - datetime.timedelta(weeks=1)
@@ -104,7 +93,6 @@ class TestTracker:
         consec_period, start, end = self.tracker.get_longeststreak_habit("test_name")
         assert consec_period == 4
         assert end > start
-
 
     def test_streak_specific(self):
         test_habit = Habit("test_name", "test_definition", "daily")

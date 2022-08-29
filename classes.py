@@ -13,7 +13,7 @@ class Habit:
 class HabitCompleted:
     def __str__(self):
         return f"{self.__class__.__name__}({self.name} completed at: {self.date})"
-    #
+    # Returns all completions and their dates
 
     def __init__(self, name, date: str = None):
         self.name = name
@@ -24,16 +24,7 @@ class HabitCompleted:
     # User can add completed habits later on - but if there's no date given, the date will automatically be set to today
 
     def __lt__(self, other):
-        """
-        Allows sorting by date, less than
-        Parameters
-        ----------
-        other
-
-        Returns
-        -------
-
-        """
+    # __lt__ to sort the dates list in the main file
         if self.date < other.date:
             return True
         else:
