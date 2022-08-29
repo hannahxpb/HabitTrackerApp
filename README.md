@@ -11,6 +11,7 @@ pip install -r requirements.txt
 
 ## How do I use the app?
 Start
+update-habit: needs all parameters, "name" "definition" "periodicity"
 ```shell
 python main.py
 ```

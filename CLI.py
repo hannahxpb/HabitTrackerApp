@@ -33,9 +33,8 @@ def create_habit(name: str, definition: str, periodicity: str):
 @app.command()
 def complete_habit(name: str, date: Optional[str] = typer.Option(None, help="Default date for a completed habit is today")):
     try:
-        _, habit_date, current_streak = ht.complete_habit(name)
         ht.complete_habit(name)
-        print(f"The habit {name} was completed on the {habit_date}. Your current streak is {current_streak}.")
+        print(f"The habit {name} was completed on the {date}.")
     except ValueError:
         print("Invalid date format. Please enter the date in the following format: YYYY-MM-DD.")
 

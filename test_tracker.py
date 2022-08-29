@@ -20,6 +20,22 @@ class TestTracker:
         with pytest.raises(ValueError):
             bad_habit = Habit("test_name2", "test_definition2", "biweekly")
 
+    def test_delete(self):
+        test_habit = Habit("test_name", "test_definition", "daily")
+        self.tracker.create(test_habit)
+        self.tracker.complete_habit("test_name")
+        assert len(self.tracker.completedHabits) == 1
+        # Assert that the length of the completedHabits list is 1 after creating and completing the habit
+        self.tracker.delete("test_name")
+        assert len(self.tracker.completedHabits) == 0
+        # Assert that the length of the completedHabits list is 1 after deleting the habit
+
+    def test_update(self):
+        test_habit = Habit("test_name", "test_definition", "daily")
+        self.tracker.create(test_habit)
+        test_habit = self.tracker.update("test_name", "test_definition2", "daily")
+        assert test_habit.definition == "test_definition2"
+
     def test_complete(self):
         test_habit = Habit("test_name", "test_definition", "daily")
         self.tracker.create(test_habit)
@@ -44,13 +60,23 @@ class TestTracker:
         test_habit = Habit("test_name", "test_definition", "daily")
         self.tracker.create(test_habit)
         today = datetime.datetime.now().date()
-        habit_name, habit_date, _ = self.tracker.complete_habit("test_name")
+        habit_name, habit_date = self.tracker.complete_habit("test_name")
         assert habit_date == today
 
     def test_complete_badhabit(self):
         with pytest.raises(ValueError):
             # Assert that a habit that wasn't created cannot be completed
             self.tracker.complete_habit("bad_habit")
+
+
+    def test_allstreaks(self):
+        test_habit = Habit("test_name", "test_definition", "daily")
+        self.tracker.create(test_habit)
+        yesterday = datetime.datetime.now().date()-datetime.timedelta(days=1)
+        self.tracker.complete_habit("test_name", yesterday.isoformat())
+        self.tracker.complete_habit("test_name")
+        assert self.tracker.find_allstreaks("test_name")
+
 
     # def test_complete_brokenstreak(self, capfd):
     #     test_habit = Habit("test_name", "test_definition", "daily")
@@ -79,21 +105,6 @@ class TestTracker:
         assert consec_period == 4
         assert end > start
 
-    def test_delete(self):
-        test_habit = Habit("test_name", "test_definition", "daily")
-        self.tracker.create(test_habit)
-        self.tracker.complete_habit("test_name")
-        assert len(self.tracker.completedHabits) == 1
-        # Assert that the length of the completedHabits list is 1 after creating and completing the habit
-        self.tracker.delete("test_name")
-        assert len(self.tracker.completedHabits) == 0
-        # Assert that the length of the completedHabits list is 1 after deleting the habit
-
-    def test_update(self):
-        test_habit = Habit("test_name", "test_definition", "daily")
-        self.tracker.create(test_habit)
-        test_habit = self.tracker.update("test_name", "test_definition2", "daily")
-        assert test_habit.definition == "test_definition2"
 
     def test_streak_specific(self):
         test_habit = Habit("test_name", "test_definition", "daily")
