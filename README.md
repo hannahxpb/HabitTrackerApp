@@ -33,6 +33,7 @@ and you will get an overview of all functions:
 │ create-habit                Creates a new habit. Requires all 3 arguments: name, definition and periodicity. For the periodicity, you can choose between "daily" or      │
 │                             "weekly".                                                                                                                                    │
 │ delete-habit                Deletes a habit. Requires name as an argument.                                                                                               │
+│ init-habits                 Initializes all preset habits.                                                                                                               │
 │ show-allhabits              Shows all habits.                                                                                                                            │
 │ show-allstreaks-habit       Shows all streaks of a habit. Requires the name of the habit as an argument.                                                                 │
 │ show-alltrackedhabits       Shows all tracked habits and their completions.                                                                                              │
@@ -48,6 +49,15 @@ and you will get an overview of all functions:
 
 To find out how to use a function, type in the following:
 ```shell
-python CLI.py nameoffunction --help
+python CLI.py nameofcommand --help
 ``` 
-The output will give you more details about the use of the function and the required or optional parameters and arguments.
+The output will give you more details about the use of the function and the required or optional parameters and arguments.<br />
+
+There are five habits preset. To access the preset habits, call the init-habits function via typer to initalize them: <br />
+
+**Workout**: Working out, daily<br />
+**Water**: Drinking at least 2l of water, daily<br />
+**Sleep**: Sleeping at least 7h, daily<br />
+**Steps**: Walking at least 3,000 steps, daily<br />
+**Stretch**: Stretching regularly, weekly<br />
+

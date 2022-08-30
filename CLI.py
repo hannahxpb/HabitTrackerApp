@@ -10,6 +10,23 @@ app = typer.Typer()
 ht = HabitTracker()
 
 @app.command()
+def init_habits():
+    """
+    Initializes all preset habits.
+    """
+    h_workout = Habit("Workout", "Working out", "daily")
+    h_water = Habit("Water", "Drinking at least 2l of water", "daily")
+    h_sleep = Habit("Sleep", "Sleep at least 7h", "daily")
+    h_steps = Habit("Steps", "Walking at leats 3,000 steps", "daily")
+    h_stretch = Habit("Stretch", "Stretching regularly", "weekly")
+    ht.create(h_workout)
+    ht.create(h_water)
+    ht.create(h_sleep)
+    ht.create(h_steps)
+    ht.create(h_stretch)
+    print("Preset habits have been initialized.")
+
+@app.command()
 def create_habit(name: str, definition: str, periodicity: Periodicity):
     """
     Creates a new habit. Requires all 3 arguments: name, definition and periodicity.
@@ -99,10 +116,13 @@ def show_habit_longeststreak(name: str):
     """
     periodicity = ht.get_streakperiod(name)
     consec_period, start, end = ht.get_longeststreak_habit(name)
-    if periodicity == 1:
-        print(f"Your longest streak is from {start} to {end}. Your longest streak is: {consec_period} days.")
-    elif periodicity == 7:
-        print(f"Your longest streak is from {start} to {end}. Your longest streak is: {consec_period} weeks.")
+    if consec_period == None:
+        print("You have no streaks for this habit yet.")
+    else:
+        if periodicity == 1:
+            print(f"Your longest streak is from {start} to {end}. Your longest streak is: {consec_period} days.")
+        elif periodicity == 7:
+            print(f"Your longest streak is from {start} to {end}. Your longest streak is: {consec_period} weeks.")
 
 @app.command()
 def show_habit_sameperiodicity(periodicity: Periodicity):

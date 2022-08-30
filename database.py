@@ -36,9 +36,9 @@ class Database:
         list_of_tuples = cursor.fetchall()
         list_of_habits = []
         for (name, definition, periodicity) in list_of_tuples:
+        # Converting the output to a list (instead of a tuple)
             habit = Habit(name, definition, periodicity)
             list_of_habits.append(habit)
-            # Converting the output to a list (instead of a tuple)
         return list_of_habits
 
     def get_alltrackedhabits(self):
@@ -47,9 +47,9 @@ class Database:
         list_of_tuples = cursor.fetchall()
         list_of_habits = []
         for (name, date) in list_of_tuples:
+        # Converting the output to a list (instead of a tuple)
             hc = HabitCompleted(name, date)
             list_of_habits.append(hc)
-            # Converting the output to a list (instead of a tuple)
         return list_of_habits
 
     def delete_habit(self, name: str):
@@ -71,6 +71,7 @@ class Database:
                         dict(name=name, definition=definition, periodicity=periodicity))
         self.database.commit()
         modified_rows = cursor.rowcount
+        # Raise exception if there were no modifications
         if modified_rows == 0:
             raise Exception(f"Could not find name: {name}")
 
@@ -89,12 +90,12 @@ class Database:
             list_of_habits.append(h)
         return list_of_habits
 
-    def get_sameperiodicity(self, periodicity):
+    def select_habitsbyperiodicity(self, periodicity):
         cursor = self.database.cursor()
         cursor.execute("SELECT * FROM habit WHERE periodicity=?", (periodicity, ))
         return cursor.fetchall()
 
-    def select_date(self, date):
+    def list_completionsondate(self, date):
         cursor = self.database.cursor()
         cursor.execute("SELECT date, habitName FROM habitCompleted WHERE date=?", (date, ))
         return cursor.fetchall()
